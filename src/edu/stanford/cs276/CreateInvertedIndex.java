@@ -49,9 +49,7 @@ public class CreateInvertedIndex {
 		 * @param context	Context for collecting output key/value pairs.
 		 * 					You can access all sorts of useful information with this.
 		 */
-		public void map(LongWritable key,
-						Text value,
-					 	Context context) throws IOException, InterruptedException {
+		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 			// Get the filename (the final component of the path) associated with the
 			// file being read.
 			// We make the simplifying assumption that the filename is a unique identifier
@@ -68,6 +66,7 @@ public class CreateInvertedIndex {
 			//    - call context.write(key, value) to output key/value pairs 
 			//      from this mapper
 			//
+			
 
 		}
 	}
@@ -237,10 +236,7 @@ public class CreateInvertedIndex {
 		
 		// In addition to the postings list, we also output the mapping between
 		// the docIds and corresponding fileNames
-		MultipleOutputs.addNamedOutput(job, "dict", 
-									  TextOutputFormat.class,
-									  Text.class,
-									  Text.class);
+		MultipleOutputs.addNamedOutput(job, "dict", TextOutputFormat.class, Text.class, Text.class);
 		
 		// UNCOMMENT THE FOLLOWING LINE IF YOU WANT MORE THAN ONE REDUCER
 		// job.setNumReduceTasks(2);
