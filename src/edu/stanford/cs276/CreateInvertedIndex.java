@@ -56,7 +56,14 @@ public class CreateInvertedIndex {
 			// for the file.
 			FileSplit fileSplit = (FileSplit)context.getInputSplit();
 			fileName.set(fileSplit.getPath().getName());
+
+			//System.out.println("to-string-" + value);
 			
+
+			String[] terms = value.toString().split("\\W");
+			for (String term : terms) {
+				context.write(new Text(term.toLowerCase()), fileName);
+			}
 			// 
 			// 1. WRITE THE CORE LOGIC OF YOUR MAPPER HERE
 			//    - the value argument to map(...) is a single line from 
@@ -148,6 +155,14 @@ public class CreateInvertedIndex {
 			//     the postings list for a key
 			//   - use context.write(key, value) to output from this reducer
 			//
+			TreeSet<Integer> set = new TreeSet<Integer>();
+			
+			for (Text fileName : values) {
+				int docID = getDocId(fileName.toString());
+				set.add(docID);	
+			}
+			context.write(key, encodePostingsList(set));
+			
 		}
 		
 		/**
@@ -188,7 +203,17 @@ public class CreateInvertedIndex {
 			//    Essentially, you want to remove duplicate fileNames from values
 			//    and output the remaining <key, value> pairs.
 			//
-
+			//HashSet<Text> set = new HashSet<Text>();
+			//while (values.hasNext()) set.add(values.next());
+			StringBuilder sb = new StringBuilder();
+			TreeSet<Text> set = new TreeSet<Text>();
+			for (Text value : values) {
+				if (!set.contains(value)) {
+					set.add(value);
+					sb.append(value.toString());
+				}
+			}
+			context.write(key, new Text(sb.toString()));
 		}
 	}
 	
@@ -211,7 +236,13 @@ public class CreateInvertedIndex {
 			//    the documents (not the terms).
 			//  - You can get a hash of any Object using the hashCode() method
 			//    
-			return 0;  // Remove this line when you implement this method
+			int hash = value.hashCode();
+			//System.out.println(hash);
+			int partition = hash % 2;
+			//System.out.println(partition);
+			//return partition > 0 ? partition : -1 * partition;			
+			return 0;
+			//return 2;  // Remove this line when you implement this method
 		}
 	}
 	
@@ -239,7 +270,7 @@ public class CreateInvertedIndex {
 		MultipleOutputs.addNamedOutput(job, "dict", TextOutputFormat.class, Text.class, Text.class);
 		
 		// UNCOMMENT THE FOLLOWING LINE IF YOU WANT MORE THAN ONE REDUCER
-		// job.setNumReduceTasks(2);
+		//job.setNumReduceTasks(2);
 		
 		// Specify the location of the input and output files
 		FileInputFormat.addInputPath(job, new Path(args[0]));
